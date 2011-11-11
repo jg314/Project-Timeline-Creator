@@ -76,12 +76,16 @@ function add_final_payment($due_dates, $business_days){
 function build_timeline_table($due_dates){
   //Build the project table.
   $project_table = '<table class="timeline">';
-  $project_table .= '<tr><th>Step</th><th>Due Date</th></tr>';
+  $project_table .= '<tr><th>Step #</th><th>Task</th><th>Due Date</th></tr>';
+  $step_number = 1;
   foreach ($due_dates as $dates) {
       $project_table .= '<tr>';
+      $project_table .= '<td>' . $step_number . '</td>';
       $project_table .= '<td>' . $dates[0] . '</td>';
       $project_table .= '<td>' . $dates[1] . '</td>';
       $project_table .= '</tr>';
+      
+      $step_number++;
   }
   $project_table .= '</table>';
 

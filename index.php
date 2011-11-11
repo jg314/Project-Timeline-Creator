@@ -34,14 +34,14 @@
       <h1>Project Timeline Generator</h1>
       <?php if (isset($_POST['start_date'])) $due_dates = build_timeline(); ?>
             
-      <p>The final payment will be added <?php echo DAYS_TO_FINAL_PAYMENT; ?> calendar days after the last project step.</p>
-      <form action="" method="post" id="timeline-form">
+      <p>The final payment will be added <?php echo DAYS_TO_FINAL_PAYMENT; ?> calendar days after the last project step.  All turnaround times (TT) are calculated in business days.</p>
+      <form action="index.php" method="post" id="timeline-form">
           <div id="timeline-steps">
               <p>Project Start Date: <input type="text" name="start_date" id="start_date" <?php if(isset($_POST['start_date'])) echo 'value="' . $_POST['start_date'] . '"'; ?>/></p>
               <?php echo build_form_fields(); ?>
           </div>
               <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
-              <p><input type="submit" value="Submit" /></p>
+              <p><input type="submit" value="Create Timeline" /></p>
       </form>
       
       
