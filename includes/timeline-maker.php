@@ -4,6 +4,10 @@ define('ONE_YEAR_IN_DAYS', 365);
 define('DAYS_TO_FINAL_PAYMENT', 15);
 
 function build_timeline() {
+    $time = explode(' ', microtime());
+    $time = $time[1] + $time[0]; // return array
+    $begintime = $time; //define begin time
+    
     $start_date = htmlentities($_POST['start_date']);
     $start_timestamp = strtotime($start_date);
     
@@ -12,6 +16,12 @@ function build_timeline() {
     $due_dates = build_due_dates($start_timestamp, $business_days);       
     
     echo build_timeline_table($due_dates);
+    
+    $time = explode(" ", microtime());
+    $time = $time[1] + $time[0];
+    $endtime = $time; //define end time
+    $totaltime = ($endtime - $begintime); //decrease to get total time
+    echo $totaltime.' seconds'; //echo it to appear in browser
     
     return $due_dates;
 }
@@ -67,7 +77,7 @@ function add_final_payment($due_dates, $business_days){
     $last_due_date = end($due_dates);
     $last_due_date = $last_due_date[2];
     $final_payment_date = date('l, F d, Y', $business_days[$last_due_date] + (ONE_DAY_IN_SECONDS * DAYS_TO_FINAL_PAYMENT));
-    $due_dates[] = array('Final Payment Due', $final_payment_date);  
+    $due_dates[] = array('$XX.XX Final Payment Due', $final_payment_date);  
     
     return $due_dates;
 }
