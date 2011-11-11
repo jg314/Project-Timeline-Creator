@@ -1,0 +1,8 @@
+#container { width: 800px; margin: auto; }
+.timeline { border-collapse: collapse; float: right; margin-left: 15px; }
+.timeline tr {
+    border: 1px solid #000;
+}
+.timeline td {
+    padding: 2px 40px 2px 2px;
+}
