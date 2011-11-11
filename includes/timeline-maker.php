@@ -1,56 +1,20 @@
 <?php
-//TODO Create a constant for one day in seconds.
+define('ONE_DAY_IN_SECONDS', 86400);
+define('ONE_YEAR_IN_DAYS', 365);
+define('DAYS_TO_FINAL_PAYMENT', 15);
 
 function build_timeline() {
-    $timeline = $_POST;
-    $start_date = $_POST['start_date'];
+    $start_date = htmlentities($_POST['start_date']);
     $start_timestamp = strtotime($start_date);
     
-    //Place every weekday for the next 365 days into an array.
-    //Start the array with the starting day;
-    $business_days = array();
-    $business_days[] = $start_timestamp;
-    $timestamp = $start_timestamp;
-    for ($i = 1; $i < 365; $i++) {
-        $timestamp += 86400;
-        if (date('D', $timestamp) != 'Sat' && date('D', $timestamp) != 'Sun') {
-            $business_days[] = $timestamp;
-        }
-    }
+    $business_days = build_business_days($start_timestamp);
     
-    $due_dates = array();
-    $due_dates[] = array('Start of Work', date('l, F d, Y', $start_timestamp));
-    $last_due_date = 0;
-    for($i = 1; $i < 100; $i++){
-        if(isset($_POST['step_' . $i])){
-            $last_due_date += $_POST['tt_' . $i];
-            $step_due_date = date('l, F d, Y', $business_days[$last_due_date]);
-            $due_dates[] = array($_POST['step_' . $i], $step_due_date);
-        }
-        else{
-            break;
-        }
-    }
+    $due_dates = build_due_dates($start_timestamp, $business_days);       
     
-    //Add the final payment 15 calendar days after the final date.
-    $final_payment_date = date('l, F d, Y', $business_days[$last_due_date] + (86400 * 15));
-    $due_dates[] = array('Final Payment Due', $final_payment_date);
-    
-    //Build the project table.
-    $project_table = '<table class="timeline">';
-    $project_table .= '<tr><th>Step</th><th>Due Date</th></tr>';
-    foreach ($due_dates as $dates) {
-        $project_table .= '<tr>';
-        $project_table .= '<td>' . $dates[0] . '</td>';
-        $project_table .= '<td>' . $dates[1] . '</td>';
-        $project_table .= '</tr>';
-    }
-    $project_table .= '</table>';
-    echo $project_table;
+    echo build_timeline_table($due_dates);
     
     return $due_dates;
 }
-
 
 
 function display_step($step_number){
@@ -60,6 +24,69 @@ function display_step($step_number){
     }
 }
 
+
+function build_business_days($start_timestamp){
+    //Place every weekday for the next 365 days into an array.
+    //Start the array with the starting day;
+    $business_days = array();
+    $business_days[] = $start_timestamp;
+    $timestamp = $start_timestamp;
+    for ($i = 1; $i < ONE_YEAR_IN_DAYS; $i++) {
+        $timestamp += ONE_DAY_IN_SECONDS;
+        if (date('D', $timestamp) != 'Sat' && date('D', $timestamp) != 'Sun') {
+            $business_days[] = $timestamp;
+        }
+    }
+    
+    return $business_days;
+}
+
+
+function build_due_dates($start_timestamp, $business_days){
+  $due_dates = array();
+  $due_dates[] = array('Start of Work', date('l, F d, Y', $start_timestamp), 0);
+  $last_due_date = 0;
+  for($i = 1; $i < 100; $i++){
+      if(isset($_POST['step_' . $i])){
+          $last_due_date += $_POST['tt_' . $i];
+          $step_due_date = date('l, F d, Y', $business_days[$last_due_date]);
+          $due_dates[] = array(htmlentities($_POST['step_' . $i]), $step_due_date, $last_due_date);
+      }
+      else{
+          break;
+      }
+  }
+  
+  $due_dates = add_final_payment($due_dates, $business_days); 
+  
+  return $due_dates;
+}
+
+
+function add_final_payment($due_dates, $business_days){
+    $last_due_date = end($due_dates);
+    $last_due_date = $last_due_date[2];
+    $final_payment_date = date('l, F d, Y', $business_days[$last_due_date] + (ONE_DAY_IN_SECONDS * DAYS_TO_FINAL_PAYMENT));
+    $due_dates[] = array('Final Payment Due', $final_payment_date);  
+    
+    return $due_dates;
+}
+
+
+function build_timeline_table($due_dates){
+  //Build the project table.
+  $project_table = '<table class="timeline">';
+  $project_table .= '<tr><th>Step</th><th>Due Date</th></tr>';
+  foreach ($due_dates as $dates) {
+      $project_table .= '<tr>';
+      $project_table .= '<td>' . $dates[0] . '</td>';
+      $project_table .= '<td>' . $dates[1] . '</td>';
+      $project_table .= '</tr>';
+  }
+  $project_table .= '</table>';
+
+  return $project_table;
+}
 
 
 function display_tt_options($tt_number = null) {
@@ -76,16 +103,15 @@ function display_tt_options($tt_number = null) {
 }
 
 
-
 function build_form_fields(){
     $form_fields = '';
     if(isset($_POST['step_1'])){
         for($i = 1; $i < 100; $i++){
             if(isset($_POST['step_' . $i])){
-                $form_fields .= '<p><input type="text" name="step_' . $i . '" id="step_' . $i . '" placeholder="Project Step"' . display_step($i) . ' />';
+                $form_fields .= '<p class="step-tt"><input type="text" name="step_' . $i . '" id="step_' . $i . '" placeholder="Project Step"' . display_step($i) . ' />';
                 $form_fields .= ' TT: <select name="tt_' . $i . '" id="tt_' . $i . '">';
                 $form_fields .= display_tt_options($i);
-                $form_fields .= '</select> <a href="" class="remove">Remove</a></p>';
+                $form_fields .= '</select></p>';
             }
             else{
                 break;
@@ -96,13 +122,12 @@ function build_form_fields(){
     }
     else{
         for($i = 1; $i < 4; $i++){
-            $form_fields .= '<p><input type="text" name="step_' . $i . '" id="step_' . $i . '" placeholder="Project Step" />';
+            $form_fields .= '<p class="step-tt"><input type="text" name="step_' . $i . '" id="step_' . $i . '" placeholder="Project Step" />';
             $form_fields .= ' TT: <select name="tt_' . $i . '" id="tt_' . $i . '">';
             $form_fields .= display_tt_options();
-            $form_fields .= '</select> <a href="" class="remove">Remove</a></p>';
+            $form_fields .= '</select></p>';
         }
         
         return $form_fields;
     }
-    
 }
