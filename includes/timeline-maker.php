@@ -5,6 +5,8 @@ define('DAYS_TO_FINAL_PAYMENT', 15);
 
 function build_timeline() {   
     $start_date = htmlentities($_POST['start_date']);
+    $project_name = htmlentities($_POST['project_name']);
+    
     $start_timestamp = strtotime($start_date);
     
     $business_days = build_business_days($start_timestamp);
@@ -12,6 +14,8 @@ function build_timeline() {
     $due_dates = build_due_dates($start_timestamp, $business_days);       
     
     $tables = build_timeline_table($due_dates);
+    store_timeline($project_name, $due_dates);
+    
     echo $tables['due_date'];
     echo $tables['task'];
     echo $tables['step'];
@@ -139,4 +143,34 @@ function build_form_fields(){
         
         return $form_fields;
     }
+}
+
+
+function store_timeline($project_name, $due_dates){
+    include 'connection.php';
+    $query = 'SELECT * from timeline WHERE project_name = "' . $project_name . '"';
+    $result = $db->query($query);
+    $num_results = $result->num_rows;
+    
+    if($project_name == ''){
+        echo 'You didn\'t enter a project name.';
+    }
+    elseif($num_results){
+       echo 'This project already exists.';
+    }
+    else{
+        echo 'This project is new and has been entered in our database.';
+        $due_dates_serialized = serialize($due_dates);
+        $query = 'insert into timeline values ("' . $project_name . '", "' . $due_dates_serialized . '"';
+        echo $query;
+        $result = $db->query($query);
+        if ($result) {
+            echo $db->affected_rows." projects inserted into database.";
+        }
+        else {
+            echo "An error has occurred. The project was not added.";
+        }
+    }
+    
+    $db->close();
 }
