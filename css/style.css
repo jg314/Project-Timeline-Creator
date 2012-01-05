@@ -1,9 +1,11 @@
 #container { width: 1024px; margin: auto; }
-.timeline { border-collapse: collapse; float: right; margin-left: 15px; }
+.timeline-tables { margin-left: 15px; }
+.timeline { border-collapse: collapse; float: right; margin-left: 0; }
 .timeline tr {
     border: 1px solid #000;
 }
 .timeline td {
     padding: 2px 40px 2px 2px;
+    height: 20px;
 }
 .step-tt input { width: 230px; }

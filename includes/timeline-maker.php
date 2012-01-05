@@ -11,8 +11,11 @@ function build_timeline() {
     
     $due_dates = build_due_dates($start_timestamp, $business_days);       
     
-    echo build_timeline_table($due_dates);
-     
+    $tables = build_timeline_table($due_dates);
+    echo $tables['due_date'];
+    echo $tables['task'];
+    echo $tables['step'];
+    
     return $due_dates;
 }
 
@@ -75,21 +78,23 @@ function add_final_payment($due_dates, $business_days){
 
 function build_timeline_table($due_dates){
   //Build the project table.
-  $project_table = '<table class="timeline">';
-  $project_table .= '<tr><th>Step #</th><th>Task</th><th>Due Date</th></tr>';
+  $tables['step'] = '<table class="timeline"><tr><th>Step #</th></tr>';
+  $tables['task'] = '<table class="timeline"><tr><th>Task</th></tr>';
+  $tables['due_date'] = '<table class="timeline"><tr><th>Due Date</th></tr>';
+
   $step_number = 1;
   foreach ($due_dates as $dates) {
-      $project_table .= '<tr>';
-      $project_table .= '<td>' . $step_number . '</td>';
-      $project_table .= '<td>' . $dates[0] . '</td>';
-      $project_table .= '<td>' . $dates[1] . '</td>';
-      $project_table .= '</tr>';
+      $tables['step'] .= '<tr><td>' . $step_number . '</td></tr>';
+      $tables['task'] .= '<tr><td>' . $dates[0] . '</td></tr>';
+      $tables['due_date'] .= '<tr><td>' . $dates[1] . '</td></tr>';
       
       $step_number++;
   }
-  $project_table .= '</table>';
+  $tables['step'] .= '</table>';
+  $tables['task'] .= '</table>';
+  $tables['due_date'] .= '</table>';
 
-  return $project_table;
+  return $tables;
 }
 
 

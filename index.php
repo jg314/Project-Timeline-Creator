@@ -24,16 +24,17 @@
   <div id="container">
     <div id="main" role="main">
       <h1>Project Timeline Creator</h1>
-      <?php if (isset($_POST['start_date'])) $due_dates = build_timeline(); ?>
+      <div class="timeline-tables">
+        <?php if (isset($_POST['start_date'])) $due_dates = build_timeline(); ?>
+      </div>
             
       <p>The final payment will be added <?php echo DAYS_TO_FINAL_PAYMENT; ?> calendar days after the last project step.  All turnaround times (TT) are calculated in business days.</p>
       <form action="index.php" method="post" id="timeline-form">
           <div id="timeline-steps">
-              <p>Project Start Date: <input type="text" name="start_date" id="start_date" <?php if(isset($_POST['start_date'])) echo 'value="' . $_POST['start_date'] . '"'; ?>/></p>
+              <p>Project Start Date: <input type="text" name="start_date" id="start_date" <?php if(isset($_POST['start_date'])) echo 'value="' . $_POST['start_date'] . '"'; ?>/><input type="submit" value="Create Timeline" /></p>
+              <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
               <?php echo build_form_fields(); ?>
           </div>
-              <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
-              <p><input type="submit" value="Create Timeline" /></p>
       </form>
     </div>
   </div> <!--! end of #container -->
