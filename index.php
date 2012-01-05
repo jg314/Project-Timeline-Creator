@@ -31,6 +31,16 @@
       <p>The final payment will be added <?php echo DAYS_TO_FINAL_PAYMENT; ?> calendar days after the last project step.  All turnaround times (TT) are calculated in business days.</p>
       <form action="index.php" method="post" id="timeline-form">
           <div id="timeline-steps">
+              <p>Load Existing Timeline:
+                  <select>
+                      <option></option>
+                      <option></option>
+                      <option></option>
+                      <option></option>
+                  </select>
+                  <input type="submit" value="Load Timeline" />
+              </p>
+              <p>Project Name: <input type="text" name="project_name" id="project_name" value="" /></p>
               <p>Project Start Date: <input type="text" name="start_date" id="start_date" <?php if(isset($_POST['start_date'])) echo 'value="' . $_POST['start_date'] . '"'; ?>/><input type="submit" value="Create Timeline" /></p>
               <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
               <?php echo build_form_fields(); ?>
