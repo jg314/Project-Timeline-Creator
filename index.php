@@ -32,16 +32,12 @@
       <form action="index.php" method="post" id="timeline-form">
           <div id="timeline-steps">
               <p>Load Existing Timeline:
-                  <select>
-                      <option></option>
-                      <option></option>
-                      <option></option>
-                      <option></option>
-                  </select>
-                  <input type="submit" value="Load Timeline" />
+                  <?php echo load_timeline_names(); ?>
+                  <input type="submit" name="load_timeline" value="Load Timeline" />
+                  <input type="submit" name="delete_timeline" value="Delete Timeline" />
               </p>
-              <p>Project Name: <input type="text" name="project_name" id="project_name" value="" /></p>
-              <p>Project Start Date: <input type="text" name="start_date" id="start_date" <?php if(isset($_POST['start_date'])) echo 'value="' . $_POST['start_date'] . '"'; ?>/><input type="submit" value="Create Timeline" /></p>
+              <p>Project Name: <input type="text" name="project_name" id="project_name" value="<?php echo get_project_name(); ?>" /> Save: <input type="checkbox" name="save_timeline" value="1" /></p>
+              <p>Project Start Date: <input type="text" name="start_date" id="start_date" value="<?php echo get_start_date(); ?>" /><input type="submit" name="create_timeline" value="Create Timeline" /></p>
               <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
               <?php echo build_form_fields(); ?>
           </div>

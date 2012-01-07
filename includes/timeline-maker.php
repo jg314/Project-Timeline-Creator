@@ -3,24 +3,71 @@ define('ONE_DAY_IN_SECONDS', 86400);
 define('ONE_YEAR_IN_DAYS', 365);
 define('DAYS_TO_FINAL_PAYMENT', 15);
 
-function build_timeline() {   
-    $start_date = htmlentities($_POST['start_date']);
-    $project_name = htmlentities($_POST['project_name']);
+//TODO Load timeline correctly into form fields.
+//TODO Finish the delete timeline function.
+
+function build_timeline() { 
+    $project_name = get_project_name();
     
-    $start_timestamp = strtotime($start_date);
-    
-    $business_days = build_business_days($start_timestamp);
-    
-    $due_dates = build_due_dates($start_timestamp, $business_days);       
-    
+    if(isset($_POST['load_timeline'])){ //Load existing timeline.
+        $due_dates = load_timeline($project_name);
+    }
+    elseif(isset($_POST['delete_timeline'])){ //Delete existing timeline.
+        
+    }
+    else { //Create new timeline.
+        $start_date = htmlentities($_POST['start_date']);
+        $start_timestamp = strtotime($start_date);
+        $business_days = build_business_days($start_timestamp);
+        $due_dates = build_due_dates($start_timestamp, $business_days); 
+    }
+   
     $tables = build_timeline_table($due_dates);
-    store_timeline($project_name, $due_dates);
+    
+    //If they checked save, then either add timeline to database or overwrite existing timeline.
+    if(isset($_POST['save_timeline'])) store_timeline($project_name, $due_dates);
     
     echo $tables['due_date'];
     echo $tables['task'];
     echo $tables['step'];
     
+    
     return $due_dates;
+}
+
+function get_project_name(){
+    if(isset($_POST['load_timeline'])){
+      $project_name = htmlentities($_POST['load_project_name']);
+    }
+    elseif(isset($_POST['create_timeline'])){
+      $project_name = htmlentities($_POST['project_name']);  
+    }
+    else{
+        $project_name = "";
+    }
+    
+    
+    return $project_name;
+}
+
+
+function get_start_date(){
+    if(isset($_POST['load_timeline'])){
+      $due_dates = load_timeline(get_project_name());
+      
+      $start_date = $due_dates[0][1];
+      $start_date = strtotime($start_date);
+      $start_date = date('m/d/Y', $start_date);
+    }
+    elseif(isset($_POST['create_timeline'])){
+      $start_date = htmlentities($_POST['start_date']);  
+    }
+    else{
+        $start_date = "";
+    }
+    
+    
+    return $start_date;
 }
 
 
@@ -45,6 +92,7 @@ function build_business_days($start_timestamp){
         }
     }
     
+    
     return $business_days;
 }
 
@@ -66,6 +114,7 @@ function build_due_dates($start_timestamp, $business_days){
   
   $due_dates = add_final_payment($due_dates, $business_days); 
   
+  
   return $due_dates;
 }
 
@@ -75,6 +124,7 @@ function add_final_payment($due_dates, $business_days){
     $last_due_date = $last_due_date[2];
     $final_payment_date = date('l, F d, Y', $business_days[$last_due_date] + (ONE_DAY_IN_SECONDS * DAYS_TO_FINAL_PAYMENT));
     $due_dates[] = array('$XX.XX Final Payment Due', $final_payment_date);  
+    
     
     return $due_dates;
 }
@@ -98,6 +148,7 @@ function build_timeline_table($due_dates){
   $tables['task'] .= '</table>';
   $tables['due_date'] .= '</table>';
 
+  
   return $tables;
 }
 
@@ -111,6 +162,7 @@ function display_tt_options($tt_number = null) {
             $options .= ' selected="selected"';
         $options .= '>' . $i . '</option>';
     }
+    
     
     return $options;
 }
@@ -131,6 +183,7 @@ function build_form_fields(){
             }
         }
         
+        
         return $form_fields;
     }
     else{
@@ -140,6 +193,7 @@ function build_form_fields(){
             $form_fields .= display_tt_options();
             $form_fields .= '</select></p>';
         }
+        
         
         return $form_fields;
     }
@@ -152,17 +206,15 @@ function store_timeline($project_name, $due_dates){
     $result = $db->query($query);
     $num_results = $result->num_rows;
     
-    if($project_name == ''){
+    //Serialize the due dates.
+    $due_dates = serialize_due_dates($due_dates);
+    
+    if($project_name == ''){ //No project name.
         echo 'You didn\'t enter a project name.';
     }
-    elseif($num_results){
-       echo 'This project already exists.';
-    }
-    else{
-        echo 'This project is new and has been entered in our database.';
-        $due_dates_serialized = serialize($due_dates);
-        $query = 'insert into timeline values ("' . $project_name . '", "' . $due_dates_serialized . '"';
-        echo $query;
+    elseif($num_results){ //Timeline already exists.  Rewrite over it.
+        echo 'This project already exists.  We are going to save over the existing timeline.';
+        $query = 'UPDATE timeline SET due_dates = "' . $due_dates . '" WHERE project_name = "' . $project_name . '"';
         $result = $db->query($query);
         if ($result) {
             echo $db->affected_rows." projects inserted into database.";
@@ -171,6 +223,67 @@ function store_timeline($project_name, $due_dates){
             echo "An error has occurred. The project was not added.";
         }
     }
+    else{ //New project.  Add timeline to database.    
+        $query = 'insert into timeline values ("", "' . $project_name . '", "' . $due_dates . '")';
+        $result = $db->query($query);
+        if ($result) {
+            echo '<span class="msg">You\'re timeline has been added to the database.</span>';
+        }
+        else {
+            echo "An error has occurred. The project was not added.";
+        }
+    }
     
     $db->close();
+}
+
+
+function load_timeline_names(){
+    include 'connection.php';
+    $query = 'SELECT project_name from timeline';
+    $result = $db->query($query);
+    $num_results = $result->num_rows;
+    
+    $select_input = '<select name="load_project_name">';
+    for ($i=0; $i <$num_results; $i++) {
+        $timeline_name = $result->fetch_assoc();
+        $select_input .= '<option name="' . $timeline_name['project_name'] . '">' . $timeline_name['project_name'] . '</option>';
+    }
+    $select_input .= '</select>';
+    
+    
+    $db->close();
+    return $select_input;
+}
+
+
+function load_timeline($project_name){
+    include 'connection.php';
+    $query = 'SELECT * from timeline WHERE project_name = "' . $project_name . '"';
+    $result = $db->query($query);
+    $timeline = $result->fetch_assoc();
+    
+    $due_dates = $timeline['due_dates'];
+    $due_dates = unserialize_due_dates($due_dates);
+
+    
+    $db->close();
+    return $due_dates;
+}
+
+
+function serialize_due_dates($due_dates){
+    $due_dates = serialize($due_dates);
+    $due_dates = str_replace('"', '`', $due_dates);
+    
+    
+    return $due_dates;
+}
+    
+function unserialize_due_dates($due_dates){
+    $due_dates = str_replace('`', '"', $due_dates);
+    $due_dates = unserialize($due_dates);
+    
+    
+    return $due_dates;
 }
