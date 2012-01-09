@@ -1,4 +1,5 @@
 <?php include 'includes/timeline-maker.php'; ?>
+<?php $timeline = build_timeline($timeline_action); ?>
 <!doctype html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
 <!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en"> <![endif]-->
@@ -25,9 +26,9 @@
     <div id="main" role="main">
       <h1>Project Timeline Creator</h1>
       <div class="timeline-tables">
-        <?php if (isset($_POST['start_date'])) $due_dates = build_timeline(); ?>
+        <?php echo $timeline['tables']; ?>
       </div>
-            
+      <span class="msg"><?php echo $msg; ?></span>    
       <p>The final payment will be added <?php echo DAYS_TO_FINAL_PAYMENT; ?> calendar days after the last project step.  All turnaround times (TT) are calculated in business days.</p>
       <form action="index.php" method="post" id="timeline-form">
           <div id="timeline-steps">
@@ -36,10 +37,10 @@
                   <input type="submit" name="load_timeline" value="Load Timeline" />
                   <input type="submit" name="delete_timeline" value="Delete Timeline" />
               </p>
-              <p>Project Name: <input type="text" name="project_name" id="project_name" value="<?php echo get_project_name(); ?>" /> Save: <input type="checkbox" name="save_timeline" value="1" /></p>
-              <p>Project Start Date: <input type="text" name="start_date" id="start_date" value="<?php echo get_start_date(); ?>" /><input type="submit" name="create_timeline" value="Create Timeline" /></p>
+              <p>Project Name: <input type="text" name="project_name" id="project_name" value="<?php echo get_project_name($timeline_action); ?>" /> Save: <input type="checkbox" name="save_timeline" value="1" /></p>
+              <p>Project Start Date: <input type="text" name="start_date" id="start_date" value="<?php echo get_start_date($timeline_action); ?>" /><input type="submit" name="create_timeline" value="Create Timeline" /></p>
               <p><input type="button" value="Add Project Step" id="add_step" /> <input type="button" value="Delete Last Project Step" id="delete_step" /></p>
-              <?php echo build_form_fields(); ?>
+              <?php echo build_form_fields($timeline_action, $timeline['due_dates'], $timeline['business_days']); ?>
           </div>
       </form>
     </div>
