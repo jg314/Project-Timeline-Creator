@@ -5,6 +5,9 @@ define('DAYS_TO_FINAL_PAYMENT', 15);
 define('MAX_TURNAROUND_DAYS', 180);
 define('DEFAULT_STEP_NUMBER', 4);
 
+//TODO When loading an existing timeline the load function is called twice.  We need to remove one.
+//TODO Improve the messages that come up for each item with more detail.
+
 //Set a blank message to add notes to as we go.
 $msg = '';
 
@@ -50,7 +53,6 @@ function build_timeline($timeline_action) {
             $timeline['business_days'] = build_business_days($timeline['start_date_timestamp']);
             break;
         case "delete":
-            echo $timeline['project_name'];
             delete_timeline($timeline['project_name']);
             break;
         case "none":
@@ -210,6 +212,9 @@ function build_timeline_table($due_dates){
       $tables['due_date'] .= '</table>';
       
       $tables['all'] = $tables['due_date'] . $tables['task'] . $tables['step'];
+      
+      global $msg;
+      $msg .= 'Your timeline was built successfully.';
   }
   else {
       $tables['all'] = '';
@@ -291,7 +296,7 @@ function store_timeline($project_name, $due_dates){
         $query = 'insert into timeline values ("", "' . $project_name . '", "' . $due_dates . '")';
         $result = $db->query($query);
         if ($result) {
-            $msg .= 'You\'re timeline has been added to the database.</span>';
+            $msg .= 'You\'re timeline has been added to the database.';
         }
         else {
             $msg .= "An error has occurred. The project was not added.";
