@@ -322,7 +322,7 @@ function load_timeline_names(){
     sort($timeline_names);
     
     //Create the select list to put the names in.
-    $select_input = '<select name="load_project_name">';
+    $select_input = '<select name="load_project_name" id="load_project_name">';
     for ($i=0; $i < sizeof($timeline_names); $i++) {
         $select_input .= '<option name="' . $timeline_names[$i] . '">' . $timeline_names[$i] . '</option>';
     }
