@@ -1,3 +1,5 @@
 /nbproject/
 /includes/connection.php
+.htaccess
+.htpasswd
 /.git-rewrite/
