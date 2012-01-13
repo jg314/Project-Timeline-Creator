@@ -6,7 +6,6 @@ define('MAX_TURNAROUND_DAYS', 180);
 define('DEFAULT_STEP_NUMBER', 4);
 
 //TODO When loading an existing timeline the load function is called twice.  We need to remove one.
-//TODO Improve the messages that come up for each item with more detail.
 
 //Set a blank message to add notes to as we go.
 $msg = '';
@@ -49,7 +48,6 @@ function build_timeline($timeline_action) {
             break;
         case "load":
             $timeline['due_dates'] = load_timeline($timeline['project_name']);
-            
             $timeline['business_days'] = build_business_days($timeline['start_date_timestamp']);
             break;
         case "delete":
@@ -91,10 +89,10 @@ function delete_timeline($project_name){
     $result = $db->query($query);
     global $msg;
     if ($result) {
-        $msg .= 'Your timeline has been deleted';
+        $msg .= 'The ' . $project_name . ' timeline has been deleted.';
     }
     else{
-        $msg .= 'There was an error deleting your timeline.';
+        $msg .= 'There was an error deleting the ' . $project_name . ' timeline.';
     }
     
     $db->close();
@@ -214,7 +212,9 @@ function build_timeline_table($due_dates){
       $tables['all'] = $tables['due_date'] . $tables['task'] . $tables['step'];
       
       global $msg;
-      $msg .= 'Your timeline was built successfully.';
+      if($msg == ''){
+          $msg .= 'Your timeline was built successfully.';
+      }
   }
   else {
       $tables['all'] = '';
@@ -296,7 +296,7 @@ function store_timeline($project_name, $due_dates){
         $query = 'insert into timeline values ("", "' . $project_name . '", "' . $due_dates . '")';
         $result = $db->query($query);
         if ($result) {
-            $msg .= 'You\'re timeline has been added to the database.';
+            $msg .= 'The ' . $project_name . ' timeline has been added to the database.';
         }
         else {
             $msg .= "An error has occurred. The project was not added.";
@@ -313,10 +313,18 @@ function load_timeline_names(){
     $result = $db->query($query);
     $num_results = $result->num_rows;
     
-    $select_input = '<select name="load_project_name">';
+    //Put all the names into an array, then sort the array alphabetically.
+    $timeline_names = array();
     for ($i=0; $i <$num_results; $i++) {
         $timeline_name = $result->fetch_assoc();
-        $select_input .= '<option name="' . $timeline_name['project_name'] . '">' . $timeline_name['project_name'] . '</option>';
+        array_push($timeline_names, $timeline_name['project_name']);
+    }
+    sort($timeline_names);
+    
+    //Create the select list to put the names in.
+    $select_input = '<select name="load_project_name">';
+    for ($i=0; $i < sizeof($timeline_names); $i++) {
+        $select_input .= '<option name="' . $timeline_names[$i] . '">' . $timeline_names[$i] . '</option>';
     }
     $select_input .= '</select>';
     
@@ -332,7 +340,7 @@ function load_timeline($project_name){
     $result = $db->query($query);
     global $msg;
     if($result){
-        $msg .= 'The ' . $project_name . ' timeline was loaded successfully.';
+        if($msg == '') $msg .= 'The ' . $project_name . ' timeline was loaded successfully.';
     }
     else {
         $msg .= 'There was an error loading your timeline.';
