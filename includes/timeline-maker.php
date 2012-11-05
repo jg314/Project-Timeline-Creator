@@ -6,7 +6,6 @@ define('MAX_TURNAROUND_DAYS', 180);
 define('DEFAULT_STEP_NUMBER', 4);
 
 //TODO When loading an existing timeline the load function is called twice.  We need to remove one.
-//TODO Create a sample connection file that can be used to create the real one.  Similar to wp-config-sample.php for WordPress.
 
 //Set a blank message to add notes to as we go.
 $msg = '';
