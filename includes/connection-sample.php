@@ -1,4 +1,5 @@
 <?php
+//After updating the db credentials you need to rename this file to connection.php.
 @ $db = new mysqli('localhost', 'username', 'password', 'db_name');
 if (mysqli_connect_errno()) {
     echo 'Error: Could not connect to database. Please try again later.';
